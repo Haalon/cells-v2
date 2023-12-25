@@ -53,11 +53,11 @@
 
 <svelte:document on:keydown={keydown} />
 
-<div class="w-full h-full relative flex justify-center pointer-events-none" style:visibility>
+<div class="w-full min-h-full absolute items-stretch flex justify-end pointer-events-none" style:visibility>
   <div
-    class="mt-12 mb-6 h-fit pointer-events-auto p-5 pt-10 bg-slate-900/95 w-fit min-w-[60%] text-white rounded flex flex-col"
+    class="mt-2 mb-2 pointer-events-auto p-5 pt-10 bg-slate-900/95 w-fit min-w-[60%] text-white rounded flex flex-col flex-shrink-0"
   >
-    <Tabs style="pill">
+    <Tabs style="pill" contentClass="p-4 bg-gray-50 rounded-lg dark:bg-gray-800 mt-4 grid flex-grow">
       <TabItem open title="Controls">
         <div class="grid grid-cols-2 gap-y-4 items-baseline">
           <div><Kbd class="px-2 py-1.5">Esc</Kbd></div>
@@ -145,14 +145,15 @@
         </div>
       </TabItem>
       <TabItem title="Source">
-        <div class="grid grid-cols-1 gap-y-4 items-baseline">
+        <div class="flex flex-col min-h-full gap-4">
           <Textarea
             on:keydown={(e) => e.stopPropagation()}
             id="textarea-id"
             placeholder="Your message"
-            rows="20"
+            rows="12"
             wrap="off"
             name="message"
+            class="flex-grow"
             bind:value={tempSrc}
           />
 
