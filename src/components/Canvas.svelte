@@ -4,6 +4,7 @@
   import { Engine } from "../lib/engine";
   import { clamp, sub, type Vec } from "../lib/vector";
   import { density, history, mode, paused, radius, src, stateSize } from "../state";
+  import { isTouchDevice } from "../utils";
 
   let canvas: HTMLCanvasElement;
 
@@ -19,6 +20,8 @@
   onMount(() => {
     canvasWidth = canvas.width = screen.width;
     canvasHeight = canvas.height = screen.height;
+
+    if (isTouchDevice()) $stateSize = [512, 512];
 
     engine = new Engine([canvasWidth, canvasHeight], canvas, $stateSize);
     engine.setRandom();
