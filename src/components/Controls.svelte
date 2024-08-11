@@ -11,12 +11,14 @@
     Tabs,
     Textarea,
   } from "flowbite-svelte";
-  import type { ChangeEventHandler, MouseEventHandler } from "svelte/elements";
+  import type { Engine } from "../lib/engine";
   import { rules } from "../lib/rules";
-  import { density, history, mode, radius, src, stateSize } from "../state";
+  import { density, history, isErasing, mode, paused, radius, src, stateSize } from "../state";
   import { isTouchDevice } from "../utils";
 
-  let visibility = "visible";
+  export let engine: Engine | undefined;
+
+  let visibility = isTouchDevice() ? "hidden" : "visible";
 
   const handleChangeX = (e: { currentTarget: EventTarget | null }) => {
     const currentTarget = e.currentTarget as HTMLInputElement;
@@ -31,7 +33,7 @@
     if (e.key == "Escape") visibility = visibility === "visible" ? "hidden" : "visible";
   }
 
-  let ruleIndex = 0;
+  let ruleIndex = Math.floor(Math.random() * rules.length);
   let tempSrc = "";
 
   $: {
@@ -39,6 +41,12 @@
   }
 
   $: {
+    // do not select heavy rules for mobile
+    if (isTouchDevice()) {
+      const mobileRules = rules.filter((rule) => rule.mobile);
+      const randomRule = mobileRules[Math.floor(Math.random() * mobileRules.length)];
+      ruleIndex = rules.findIndex((rule) => randomRule === rule);
+    }
     const rule = rules[ruleIndex];
     $src = rule.src;
     $density = rule.r;
@@ -47,6 +55,11 @@
   const visibilityHandler = (e: { currentTarget: EventTarget | null }) => {
     const currentTarget = e.currentTarget as HTMLButtonElement;
     visibility = visibility === "visible" ? "hidden" : "visible";
+    setTimeout(() => currentTarget.blur(), 200);
+  };
+
+  const unFocus = (e: { currentTarget: EventTarget | null }) => {
+    const currentTarget = e.currentTarget as HTMLButtonElement;
     setTimeout(() => currentTarget.blur(), 200);
   };
 </script>
@@ -58,48 +71,50 @@
     class="mt-2 mb-2 pointer-events-auto p-5 pt-10 bg-slate-900/95 w-fit min-w-[60%] text-white rounded flex flex-col flex-shrink-0"
   >
     <Tabs style="pill" contentClass="p-4 bg-gray-50 rounded-lg dark:bg-gray-800 mt-4 grid flex-grow">
-      <TabItem open title="Controls">
-        <div class="grid grid-cols-2 gap-y-4 items-baseline">
-          <div><Kbd class="px-2 py-1.5">Esc</Kbd></div>
-          <div>Show\Hide this dialog</div>
+      {#if !isTouchDevice()}
+        <TabItem title="Controls">
+          <div class="grid grid-cols-2 gap-y-4 items-baseline">
+            <div><Kbd class="px-2 py-1.5">Esc</Kbd></div>
+            <div>Show\Hide this dialog</div>
 
-          <div><Kbd class="px-2 py-1.5">Backspace</Kbd></div>
-          <div>Repopulate field</div>
+            <div><Kbd class="px-2 py-1.5">Backspace</Kbd></div>
+            <div>Repopulate field</div>
 
-          <div><Kbd class="px-2 py-1.5">Delete</Kbd></div>
-          <div>Clear field</div>
+            <div><Kbd class="px-2 py-1.5">Delete</Kbd></div>
+            <div>Clear field</div>
 
-          <div><Kbd class="px-2 py-1.5">Space</Kbd></div>
-          <div>Toggle pause</div>
+            <div><Kbd class="px-2 py-1.5">Space</Kbd></div>
+            <div>Toggle pause</div>
 
-          <div><Kbd class="px-2 py-1.5">Enter</Kbd></div>
-          <div>Advance one iteration</div>
+            <div><Kbd class="px-2 py-1.5">Enter</Kbd></div>
+            <div>Advance one iteration</div>
 
-          <div><Kbd class="px-2 py-1.5">Rmb</Kbd> + Mouse Drag</div>
-          <div>Drag the field around</div>
+            <div><Kbd class="px-2 py-1.5">Rmb</Kbd> + Mouse Drag</div>
+            <div>Drag the field around</div>
 
-          <div><Kbd class="px-2 py-1.5">Wheel</Kbd></div>
-          <div>Zoom In\Out</div>
+            <div><Kbd class="px-2 py-1.5">Wheel</Kbd></div>
+            <div>Zoom In\Out</div>
 
-          <div><Kbd class="px-2 py-1.5">Lmb</Kbd></div>
-          <div>Draw on the field</div>
+            <div><Kbd class="px-2 py-1.5">Lmb</Kbd></div>
+            <div>Draw on the field</div>
 
-          <div><Kbd class="px-2 py-1.5">Lmb</Kbd> + <Kbd class="px-2 py-1.5">Shift</Kbd></div>
-          <div>Erase on the field</div>
+            <div><Kbd class="px-2 py-1.5">Lmb</Kbd> + <Kbd class="px-2 py-1.5">Shift</Kbd></div>
+            <div>Erase on the field</div>
 
-          <div><Kbd class="px-2 py-1.5">H</Kbd></div>
-          <div>Toggle history shader</div>
+            <div><Kbd class="px-2 py-1.5">H</Kbd></div>
+            <div>Toggle history shader</div>
 
-          <div><Kbd class="px-2 py-1.5">1</Kbd>...<Kbd class="px-2 py-1.5">9</Kbd></div>
-          <div>Switch preset drawing sizes</div>
+            <div><Kbd class="px-2 py-1.5">1</Kbd>...<Kbd class="px-2 py-1.5">9</Kbd></div>
+            <div>Switch preset drawing sizes</div>
 
-          <div>
-            <Kbd class="px-2 py-1.5">R</Kbd> / <Kbd class="px-2 py-1.5">C</Kbd> / <Kbd class="px-2 py-1.5">S</Kbd>
+            <div>
+              <Kbd class="px-2 py-1.5">R</Kbd> / <Kbd class="px-2 py-1.5">C</Kbd> / <Kbd class="px-2 py-1.5">S</Kbd>
+            </div>
+            <div>Switch drawing shape</div>
           </div>
-          <div>Switch drawing shape</div>
-        </div>
-      </TabItem>
-      <TabItem title="General">
+        </TabItem>
+      {/if}
+      <TabItem open title="General">
         <div class="grid grid-cols-2 gap-y-4 items-baseline">
           <label for="rules">Select rule</label>
           <Select id="rules" bind:value={ruleIndex} placeholder="">
@@ -178,11 +193,41 @@
             <RadioButton value={1} bind:group={$mode}>◆</RadioButton>
             <RadioButton value={2} bind:group={$mode}>●</RadioButton>
           </ButtonGroup>
+
+          {#if isTouchDevice()}
+            <label for="erase">Erase</label>
+            <Checkbox name="erase" bind:checked={$isErasing} />
+          {/if}
         </div>
       </TabItem>
     </Tabs>
   </div>
 </div>
+
 <div class="fixed top-2 right-2" style:visibility={isTouchDevice() ? "visible" : "hidden"}>
-  <Button size="sm" on:click={visibilityHandler}>X</Button>
+  <Button
+    size="sm"
+    on:click={(e) => {
+      $paused = !$paused;
+      unFocus(e);
+    }}
+  >
+    {#if $paused}▶{:else}⏸{/if}
+  </Button>
+  <Button
+    size="sm"
+    on:click={(e) => {
+      engine?.setRandom($density);
+      unFocus(e);
+    }}>↺</Button
+  >
+  <Button
+    size="sm"
+    on:click={(e) => {
+      visibility = visibility === "visible" ? "hidden" : "visible";
+      unFocus(e);
+    }}
+  >
+    {#if visibility === "hidden"}☰{:else}X{/if}
+  </Button>
 </div>

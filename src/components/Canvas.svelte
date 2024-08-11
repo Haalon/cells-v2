@@ -1,10 +1,12 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { pan, pinch, type GestureCustomEvent, type PanCustomEvent, type PinchCustomEvent } from "svelte-gestures";
   import { get } from "svelte/store";
   import { Engine } from "../lib/engine";
   import { clamp, sub, type Vec } from "../lib/vector";
-  import { density, history, mode, paused, radius, src, stateSize } from "../state";
+  import { density, history, isErasing, mode, paused, radius, src, stateSize } from "../state";
   import { isTouchDevice } from "../utils";
+  import Controls from "./Controls.svelte";
 
   let canvas: HTMLCanvasElement;
 
@@ -12,16 +14,18 @@
   let engine: Engine;
 
   let currPos: Vec = [0, 0];
-  let prevPos: Vec = [0, 0];
+  let prevPos: Vec | null = null;
 
   let buttonKey: number | null = null;
   let shiftKey = false;
+
+  const IS_TOUCH_DEVICE = isTouchDevice();
 
   onMount(() => {
     canvasWidth = canvas.width = screen.width;
     canvasHeight = canvas.height = screen.height;
 
-    if (isTouchDevice()) $stateSize = [512, 512];
+    if (IS_TOUCH_DEVICE) $stateSize = [512, 512];
 
     engine = new Engine([canvasWidth, canvasHeight], canvas, $stateSize);
     engine.setRandom();
@@ -31,15 +35,16 @@
 
       if (!$paused) engine.next();
 
-      if (buttonKey === 0) {
+      if (buttonKey === 0 && prevPos) {
         engine.drawLine({ origin: prevPos, end: currPos, mode: $mode, value: !shiftKey, radius: $radius });
+        prevPos = currPos;
       }
 
-      if (buttonKey === 2) {
+      if (buttonKey === 2 && prevPos) {
         engine.shiftBy(sub(prevPos, currPos));
+        prevPos = currPos;
       }
 
-      prevPos = currPos;
       engine.display($history);
     });
 
@@ -52,30 +57,37 @@
     if (canvas && engine) {
       engine.setRule($src);
       engine.setRandom(get(density));
-    }
-  }
 
-  $: {
-    if (canvas && engine) {
       engine.setStateSize($stateSize);
       engine.setRandom(get(density));
     }
   }
 
-  function pointerdown(event: MouseEvent) {
-    currPos = engine.getWorldPositionFromEvent(event);
-    buttonKey = event.button;
-    shiftKey = event.shiftKey;
+  function panDown(event: GestureCustomEvent) {
+    if (!IS_TOUCH_DEVICE) {
+      prevPos = currPos = engine.getWorldPositionFromEvent(event.detail.event.pageX, event.detail.event.pageY);
+      buttonKey = event.detail.event.button;
+      shiftKey = event.detail.event.shiftKey;
+    } else {
+      prevPos = currPos = engine.getWorldPositionFromEvent(event.detail.x, event.detail.y);
+      buttonKey = event.detail.pointersCount > 1 ? 2 : 0;
+      shiftKey = $isErasing;
+    }
   }
 
-  function pointermove(event: MouseEvent) {
-    prevPos = currPos;
-    currPos = engine.getWorldPositionFromEvent(event);
-    shiftKey = event.shiftKey;
+  function panMove(event: GestureCustomEvent) {
+    if (!IS_TOUCH_DEVICE) {
+      shiftKey = event.detail.event.shiftKey;
+      currPos = engine.getWorldPositionFromEvent(event.detail.event.pageX, event.detail.event.pageY);
+    } else {
+      buttonKey = event.detail.pointersCount > 1 ? 2 : 0;
+      currPos = engine.getWorldPositionFromEvent(event.detail.x, event.detail.y);
+    }
   }
 
-  function pointerup(event: MouseEvent) {
+  function panUp() {
     buttonKey = null;
+    prevPos = null;
   }
 
   function keydown(e: KeyboardEvent) {
@@ -124,9 +136,21 @@
     engine.zoomAt(currPos, scale);
   }
 
-  function resize() {
-    console.log(screen.width, screen.height);
+  let initialScale = 1;
 
+  function pinchDown(event: GestureCustomEvent) {
+    initialScale = engine.scale;
+  }
+
+  function pinchHandler(event: PinchCustomEvent) {
+    let scale = event.detail.scale * initialScale;
+    const center = engine.getWorldPositionFromEvent(event.detail.center.x, event.detail.center.y);
+
+    scale = clamp(scale, 0.125, 64);
+    engine.zoomAt(center, scale);
+  }
+
+  function resize() {
     if (canvasWidth === screen.width && canvasHeight === screen.height) return;
     canvasWidth = canvas.width = screen.width;
     canvasHeight = canvas.height = screen.height;
@@ -139,10 +163,15 @@
 
 <canvas
   bind:this={canvas}
-  on:pointerdown={pointerdown}
-  on:pointermove={pointermove}
-  on:pointerup={pointerup}
+  use:pan={{ delay: 500 }}
+  use:pinch
+  on:pandown={panDown}
+  on:panmove={panMove}
+  on:panup={panUp}
   on:wheel={wheel}
+  on:pinchdown={pinchDown}
+  on:pinch={pinchHandler}
   on:contextmenu|preventDefault
   class="touch-none fixed top-0 left-0 bg-black"
 />
+<Controls {engine} />

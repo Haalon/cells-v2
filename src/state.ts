@@ -15,4 +15,6 @@ export const src = writable("");
 export const radius = writable(50);
 export const mode = writable(2);
 
+export const isErasing = writable(false);
+
 export const stateSize = writable<Vec>([1024, 1024]);

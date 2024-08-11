@@ -45,7 +45,14 @@ import worms_and_cells from "../glsl/rules/worms_and_cells.frag";
 import zebra from "../glsl/rules/zebra.frag";
 import zones_and_cells from "../glsl/rules/zones_and_cells.frag";
 
-export const rules = [
+type Rule = {
+  name: string;
+  r: number;
+  src: string;
+  mobile?: boolean;
+};
+
+export const rules: Rule[] = [
   {
     name: "hungry cells",
     r: 0.53,
@@ -55,11 +62,13 @@ export const rules = [
     name: "walking cells",
     r: 0.33,
     src: walking_cells,
+    mobile: true,
   },
   {
     name: "flame",
     r: 0.3,
     src: flame,
+    mobile: true,
   },
   {
     name: "mold",
@@ -70,16 +79,19 @@ export const rules = [
     name: "growing mold",
     r: 0.22,
     src: growing_mold,
+    mobile: true,
   },
   {
     name: "zebra",
     r: 0.45,
     src: zebra,
+    mobile: true,
   },
   {
     name: "petri dish",
     r: 0.05,
     src: petri_dish,
+    mobile: true,
   },
   {
     name: "square worms",
@@ -100,11 +112,13 @@ export const rules = [
     name: "patches",
     r: 0.4,
     src: patches,
+    mobile: true,
   },
   {
     name: "gears",
     r: 0.38,
     src: gears,
+    mobile: true,
   },
   {
     name: "chained cells",
@@ -115,26 +129,31 @@ export const rules = [
     name: "primordial soup",
     r: 0.25,
     src: primordial_soup,
+    mobile: true,
   },
   {
     name: "primordial soup 2",
     r: 0.03,
     src: primordial_soup_2,
+    mobile: true,
   },
   {
     name: "cancer growth",
     r: 0.58,
     src: cancer_growth,
+    mobile: true,
   },
   {
     name: "quicksand",
     r: 0.5,
     src: quicksand,
+    mobile: true,
   },
   {
     name: "flammable gas",
     r: 0.75,
     src: flammable_gas,
+    mobile: true,
   },
   {
     name: "tentacles",
@@ -145,21 +164,25 @@ export const rules = [
     name: "random walkers",
     r: 0.5,
     src: random_walkers,
+    mobile: true,
   },
   {
     name: "game of life",
     r: 0.4,
     src: game_of_life,
+    mobile: true,
   },
   {
     name: "guts",
     r: 0.5,
     src: guts,
+    mobile: true,
   },
   {
     name: "crystals",
     r: 0.42,
     src: crystals,
+    mobile: true,
   },
   {
     name: "cells and worms",
@@ -190,6 +213,7 @@ export const rules = [
     name: "expanding worms 2",
     r: 0.3,
     src: expanding_worms_2,
+    mobile: true,
   },
   {
     name: "expanding worms 3",
@@ -200,11 +224,13 @@ export const rules = [
     name: "kaleidoscope",
     r: 0.93,
     src: kaleidoscope,
+    mobile: true,
   },
   {
     name: "region maker",
     r: 0.5,
     src: region_maker,
+    mobile: true,
   },
   {
     name: "noisy cells",
@@ -220,11 +246,13 @@ export const rules = [
     name: "dividing dots",
     r: 0.5,
     src: dividing_dots,
+    mobile: true,
   },
   {
     name: "medusa gliders",
     r: 0.5,
     src: medusa_gliders,
+    mobile: true,
   },
   {
     name: "medusa gliders 2",
@@ -235,11 +263,13 @@ export const rules = [
     name: "borders",
     r: 0.5,
     src: borders,
+    mobile: true,
   },
   {
     name: "borders 2",
     r: 0.09,
     src: borders_2,
+    mobile: true,
   },
   {
     name: "zones and cells",
@@ -255,6 +285,7 @@ export const rules = [
     name: "smoke walls",
     r: 0.3,
     src: smoke_walls,
+    mobile: true,
   },
   {
     name: "dotted amoebas",
@@ -265,10 +296,12 @@ export const rules = [
     name: "lazy builder",
     r: 0.3,
     src: lazy_builder,
+    mobile: true,
   },
   {
     name: "day and night",
     r: 0.5,
     src: day_and_night,
+    mobile: true,
   },
-] as const;
+];

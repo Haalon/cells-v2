@@ -28,6 +28,7 @@
     "vite-plugin-glsl": "^1.2.1"
   },
   "dependencies": {
+    "svelte-gestures": "^5.0.4",
     "ts-igloo": "^1.1.0"
   }
 }

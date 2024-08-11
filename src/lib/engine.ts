@@ -181,9 +181,9 @@ export class Engine {
     return this;
   }
 
-  getWorldPositionFromEvent(event: MouseEvent): Vec {
+  getWorldPositionFromEvent(x: number, y: number): Vec {
     const rect = this.canvas.getBoundingClientRect();
-    return [event.pageX - rect.left, this.canvas.height - (event.pageY - rect.top)];
+    return [x - rect.left, this.canvas.height - (y - rect.top)];
   }
 
   getStatePos(pos: Vec): Vec {
